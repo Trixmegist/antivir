@@ -1,14 +1,1 @@
-//buildscript {
-//    repositories { mavenCentral() }
-//}
-
 apply plugin: 'java'
-
-sourceCompatibility = 1.8
-jar {
-    baseName = 'test'
-    version = '0.0.1-SNAPSHOT'
-}
-
-repositories { mavenCentral() }
-dependencies {}
