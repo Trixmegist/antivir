@@ -2,8 +2,10 @@ package org.antivir.client;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
 
 import static java.lang.Integer.parseInt;
+import static java.util.Arrays.copyOf;
 
 public class AntivirClient {
 
@@ -19,7 +21,7 @@ public class AntivirClient {
       return;
     }
 
-    String filepathToScan = args[0];
+    String fileToScan = args[0];
     String serverHost = args.length > 1
         ? args[1]
         : DEFAULT_SERVER_HOST;
@@ -27,15 +29,14 @@ public class AntivirClient {
         ? parseInt(args[2])
         : DEFAULT_SERVER_PORT;
 
-    if (filepathToScan == null) {
+    if (fileToScan == null) {
       System.out.println("Please specify a file to scan as a first argument");
       return;
     }
 
-    File fileToScan = new File(filepathToScan);
     String scanResult = null;
     try {
-      scanResult = scan(fileToScan, serverHost, serverPort);
+      scanResult = scan(new File(fileToScan), serverHost, serverPort);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -43,37 +44,42 @@ public class AntivirClient {
   }
 
   private static String scan(File file, String antivirHost, int antivirPort) throws IOException {
-    InputStream fileIn = new FileInputStream(file);
+    try (InputStream fileIn = new FileInputStream(file);
+         Socket server = new Socket(antivirHost, antivirPort);
+         OutputStream serverOut = server.getOutputStream();
+         BufferedReader serverIn = new BufferedReader(new InputStreamReader(server.getInputStream()))) {
 
-    Socket server = new Socket(antivirHost, antivirPort);
-    OutputStream serverOut = server.getOutputStream();
-    BufferedReader serverIn = new BufferedReader(new InputStreamReader(server.getInputStream()));
+      byte[] buf = new byte[BUFFER_SIZE];
+      int bytesRead = 0;
 
-    byte[] buf = new byte[BUFFER_SIZE];
-    int bytesRead = 0;
+      while ((bytesRead = fileIn.read(buf)) != -1) {
+        try {
+          serverOut.write(buf, 0, bytesRead);
+          serverOut.flush();
+          print("chunk sent: ", buf, bytesRead);
+        } catch (IOException e) {
+          if (!serverIn.ready()) {
+            throw e;
+          }
+        }
 
-    while ((bytesRead = fileIn.read(buf)) != -1) {
-      try {
-        serverOut.write(buf, 0, bytesRead);
-        serverOut.flush();
-      } catch (IOException e) {
-
+        if (serverIn.ready()) {
+          break;
+        }
       }
-    }
 
-    print("reading chunk status");
-    String chunkStatus = serverIn.readLine();
-    print("chunk status: " + chunkStatus);
-    if (INFECTION_POSITIVE_RESPONSE.equals(chunkStatus)) {
-      serverIn.close();
-      serverOut.close();
-      return INFECTION_POSITIVE_RESPONSE;
+      server.shutdownOutput();
+      print("reading chunk status");
+      String chunkStatus = serverIn.readLine();
+      print("chunk status: " + chunkStatus);
+      return chunkStatus;
     }
-    server.shutdownOutput();
-    return INFECTION_NEGATIVE_RESPONSE;
   }
 
   private static void print(String string) {
     System.out.println(string);
+  }
+  private static void print(String string, byte[] buf, int length) {
+    System.out.println(string + new String(copyOf(buf, length)));
   }
 }
