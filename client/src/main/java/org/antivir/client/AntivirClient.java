@@ -47,29 +47,33 @@ public class AntivirClient {
 
     Socket server = new Socket(antivirHost, antivirPort);
     OutputStream serverOut = server.getOutputStream();
-    BufferedReader serverIn  = new BufferedReader(new InputStreamReader(server.getInputStream()));
+    BufferedReader serverIn = new BufferedReader(new InputStreamReader(server.getInputStream()));
 
     byte[] buf = new byte[BUFFER_SIZE];
     int bytesRead = 0;
 
     while ((bytesRead = fileIn.read(buf)) != -1) {
-      serverOut.write(buf, 0, bytesRead);
-      serverOut.flush();
+      try {
+        serverOut.write(buf, 0, bytesRead);
+        serverOut.flush();
+      } catch (IOException e) {
 
-      print("reading chunk status");
-      String chunkStatus = serverIn.readLine();
-      print("chunk status: "+chunkStatus);
-      if (INFECTION_POSITIVE_RESPONSE.equals(chunkStatus)){
-        serverIn.close();
-        serverOut.close();
-        return INFECTION_POSITIVE_RESPONSE;
       }
+    }
+
+    print("reading chunk status");
+    String chunkStatus = serverIn.readLine();
+    print("chunk status: " + chunkStatus);
+    if (INFECTION_POSITIVE_RESPONSE.equals(chunkStatus)) {
+      serverIn.close();
+      serverOut.close();
+      return INFECTION_POSITIVE_RESPONSE;
     }
     server.shutdownOutput();
     return INFECTION_NEGATIVE_RESPONSE;
   }
 
-  private static void print(String string){
+  private static void print(String string) {
     System.out.println(string);
   }
 }

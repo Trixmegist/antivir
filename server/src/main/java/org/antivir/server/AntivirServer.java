@@ -18,31 +18,35 @@ public class AntivirServer {
   public static final int BUFFER_SIZE = 3;
   public static final int THREAD_COUNT = 10;
 
+  private final int port;
+
+  public AntivirServer(int port) {
+    this.port = port;
+  }
+
   public static void main(String[] args) throws IOException {
     int port = args.length > 0
         ? parseInt(args[0])
         : DEFAULT_SERVER_PORT;
-    start(port);
+
+    new AntivirServer(port).start();
   }
 
-  private static void start(int port) throws IOException {
+  private void start() throws IOException {
     ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_COUNT);
 
     try (ServerSocket serverSocket = new ServerSocket(port)) {
       System.out.println("waiting for connection...");
       while (true) {
         Socket clientSocket = serverSocket.accept();
-        scanRequest(clientSocket);
-        threadPool.submit(
-            () -> scanRequest(clientSocket)
-        );
+        threadPool.submit(() -> scanRequest(clientSocket));
       }
     } finally {
       threadPool.shutdown();
     }
   }
 
-  private static void scanRequest(Socket client) {
+  private void scanRequest(Socket client) {
     try {
       Reader clientIn = new InputStreamReader(client.getInputStream());
       PrintWriter clientOut = new PrintWriter(new OutputStreamWriter(client.getOutputStream()));
@@ -52,15 +56,15 @@ public class AntivirServer {
       int matchedCharsCount = 0;
 
       while ((charsRead = clientIn.read(buf)) != -1) {
-        print("chunk read: "+String.valueOf(Arrays.copyOf(buf, charsRead)));
-        String chuckStatus = INFECTION_NEGATIVE_RESPONSE;
+        print("chunk read: " + String.valueOf(Arrays.copyOf(buf, charsRead)));
+        String chunkStatus = INFECTION_NEGATIVE_RESPONSE;
 
         for (int i = 0; i < charsRead; i++) {
           if (INFECTION_MARKER.charAt(matchedCharsCount) == buf[i]) {
             matchedCharsCount++;
 
-            if(matchedCharsCount == INFECTION_MARKER.length()) {
-              chuckStatus = INFECTION_POSITIVE_RESPONSE;
+            if (matchedCharsCount == INFECTION_MARKER.length()) {
+              chunkStatus = INFECTION_POSITIVE_RESPONSE;
               break;
             }
           } else {
@@ -70,12 +74,120 @@ public class AntivirServer {
         }
 
         print("sending chunk status to the client...");
-        clientOut.println(chuckStatus);
+        clientOut.println(chunkStatus);
         clientOut.flush();
-        print("chuck status: "+chuckStatus);
+        print("chuck status: " + chunkStatus);
       }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void scanRequest2(Socket client) {
+    try (Reader clientIn = new InputStreamReader(client.getInputStream());
+         PrintWriter clientOut = new PrintWriter(new OutputStreamWriter(client.getOutputStream()))) {
+
+      clientOut.println(findInStream(clientIn, INFECTION_MARKER)
+          ? INFECTION_POSITIVE_RESPONSE
+          : INFECTION_NEGATIVE_RESPONSE);
+
     } catch (IOException e) {
       e.printStackTrace();
+    }
+  }
+
+  private static boolean findInStream(Reader stream, String sample) throws IOException {
+    char[] buf = new char[BUFFER_SIZE];
+    int charsRead = 0;
+    int matchedCharsCount = 0;
+
+    boolean result = false;
+    while ((charsRead = stream.read(buf)) != -1) {
+      print("chunk read: " + String.valueOf(Arrays.copyOf(buf, charsRead)));
+      if (findInChunk(buf, charsRead, sample, matchedCharsCount)) {
+        result = true;
+        break;
+      }
+    }
+    return result;
+  }
+
+  private static boolean findInChunk(char[] chunk, int length, String sample, int matchedCharsCount) {
+    for (int i = 0; i < length; i++) {
+      if (sample.charAt(matchedCharsCount) == chunk[i]) {
+        matchedCharsCount++;
+
+        if (matchedCharsCount == sample.length()) {
+          return true;
+        }
+      } else {
+        i -= matchedCharsCount;
+        matchedCharsCount = 0;
+      }
+    }
+    return false;
+  }
+
+
+  private static class StreamScanner {
+    private Reader stream;
+    private String needle;
+    private Runnable onSuccess;
+    private Runnable onFail;
+
+    private StreamScanner(Reader stream) {
+      this.stream = stream;
+    }
+
+    public static StreamScanner scan(Reader stream) {
+      return new StreamScanner(stream);
+    }
+
+    public StreamScanner forString(String needle) {
+      this.needle = needle;
+      return this;
+    }
+
+    public StreamScanner onSuccess(Runnable cb) {
+      this.onSuccess = cb;
+      return this;
+    }
+
+    public StreamScanner onFail(Runnable cb) {
+      this.onFail = cb;
+      return this;
+    }
+
+    public void start() throws IOException {
+      char[] buf = new char[BUFFER_SIZE];
+      int charsRead = 0;
+      int matchedCharsCount = 0;
+
+      Runnable resultCallback = onFail;
+      while ((charsRead = stream.read(buf)) != -1) {
+        print("chunk read: " + String.valueOf(Arrays.copyOf(buf, charsRead)));
+        if (findInChunk(buf, charsRead, needle, matchedCharsCount)) {
+          resultCallback = onSuccess;
+          break;
+        }
+      }
+      resultCallback.run();
+    }
+
+    private boolean findInChunk(char[] chunk, int length, String needle, int matchedCharsCount) {
+      for (int i = 0; i < length; i++) {
+        if (needle.charAt(matchedCharsCount) == chunk[i]) {
+          matchedCharsCount++;
+
+          if (matchedCharsCount == needle.length()) {
+            return true;
+          }
+        } else {
+          i -= matchedCharsCount;
+          matchedCharsCount = 0;
+        }
+      }
+      return false;
     }
   }
 
