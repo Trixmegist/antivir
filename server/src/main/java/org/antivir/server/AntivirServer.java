@@ -1,5 +1,7 @@
 package org.antivir.server;
 
+import org.antivir.common.LoggingUtils;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -7,9 +9,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static java.lang.Integer.parseInt;
+import static org.antivir.common.LoggingUtils.print;
 import static org.antivir.common.ServerDefaults.*;
 import static org.antivir.server.StreamScanner.StreamScannerBuilder.streamScaner;
-import static org.antivir.server.Utils.print;
 
 public class AntivirServer {
 

@@ -76,10 +76,7 @@ public class AntivirClient {
       }
 
       server.shutdownOutput();
-      print("reading chunk status");
-      String chunkStatus = serverIn.readLine();
-      print("chunk status: " + chunkStatus);
-      return chunkStatus;
+      return serverIn.readLine();
     }
   }
 }
