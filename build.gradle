@@ -5,9 +5,10 @@ allprojects {
   sourceCompatibility = 1.8
 }
 
-subprojects {
+configure(subprojects.findAll { it.name != 'common' }) {
   repositories { mavenCentral() }
   dependencies {
+    compile project(':common')
     testCompile 'junit:junit:4.11'
   }
 }

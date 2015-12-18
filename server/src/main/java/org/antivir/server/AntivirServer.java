@@ -7,16 +7,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static java.lang.Integer.parseInt;
+import static org.antivir.common.ServerDefaults.*;
 import static org.antivir.server.StreamScanner.StreamScannerBuilder.streamScaner;
 import static org.antivir.server.Utils.print;
 
 public class AntivirServer {
 
-  public static final int DEFAULT_SERVER_PORT = 8181;
-  public static final String INFECTION_POSITIVE_RESPONSE = "infected";
-  public static final String INFECTION_NEGATIVE_RESPONSE = "safe";
   public static final String INFECTION_MARKER = "virus";
-  public static final int BUFFER_SIZE = 3;
   public static final int THREAD_COUNT = 10;
 
   private final int port;

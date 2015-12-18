@@ -4,13 +4,13 @@ import java.io.*;
 import java.net.Socket;
 
 import static java.lang.Integer.parseInt;
-import static java.util.Arrays.copyOf;
 import static java.util.Objects.requireNonNull;
+import static org.antivir.common.LoggingUtils.print;
+import static org.antivir.common.ServerDefaults.DEFAULT_SERVER_HOST;
+import static org.antivir.common.ServerDefaults.DEFAULT_SERVER_PORT;
 
 public class AntivirClient {
 
-  public static final int DEFAULT_SERVER_PORT = 8181;
-  public static final String DEFAULT_SERVER_HOST = "localhost";
   public static final int BUFFER_SIZE = 3;
 
   private final int serverPort;
@@ -81,13 +81,5 @@ public class AntivirClient {
       print("chunk status: " + chunkStatus);
       return chunkStatus;
     }
-  }
-
-  private static void print(String string) {
-    System.out.println(string);
-  }
-
-  private static void print(String string, byte[] buf, int length) {
-    System.out.println(string + new String(copyOf(buf, length)));
   }
 }
