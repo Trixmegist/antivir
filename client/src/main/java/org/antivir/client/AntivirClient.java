@@ -2,10 +2,10 @@ package org.antivir.client;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Arrays;
 
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.copyOf;
+import static java.util.Objects.requireNonNull;
 
 public class AntivirClient {
 
@@ -14,6 +14,9 @@ public class AntivirClient {
   public static final int BUFFER_SIZE = 3;
   public static final String INFECTION_POSITIVE_RESPONSE = "infected";
   public static final String INFECTION_NEGATIVE_RESPONSE = "safe";
+
+  private final int serverPort;
+  private final String serverHost;
 
   public static void main(String[] args) {
     if (args.length == 0) {
@@ -34,18 +37,24 @@ public class AntivirClient {
       return;
     }
 
-    String scanResult = null;
     try {
-      scanResult = scan(new File(fileToScan), serverHost, serverPort);
+      File file = new File(fileToScan);
+      AntivirClient client = new AntivirClient(serverPort, serverHost);
+      print("scanning: " + file.getAbsolutePath());
+      print("result: " + client.scan(new File(fileToScan)));
     } catch (IOException e) {
       e.printStackTrace();
     }
-    System.out.println(scanResult);
   }
 
-  private static String scan(File file, String antivirHost, int antivirPort) throws IOException {
+  public AntivirClient(int serverPort, String serverHost) {
+    this.serverPort = serverPort;
+    this.serverHost = requireNonNull(serverHost);
+  }
+
+  public String scan(File file) throws IOException {
     try (InputStream fileIn = new FileInputStream(file);
-         Socket server = new Socket(antivirHost, antivirPort);
+         Socket server = new Socket(serverHost, serverPort);
          OutputStream serverOut = server.getOutputStream();
          BufferedReader serverIn = new BufferedReader(new InputStreamReader(server.getInputStream()))) {
 
