@@ -1,15 +1,5 @@
-apply plugin: 'java'
-
-version 'unspecified'
-sourceCompatibility = 1.8
-
 jar {
   manifest {
     attributes 'Main-Class': 'org.antivir.client.AntivirClient'
   }
-}
-
-repositories { mavenCentral() }
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
 }

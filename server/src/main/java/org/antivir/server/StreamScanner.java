@@ -22,7 +22,7 @@ class StreamScanner {
   }
 
   public void start() throws IOException {
-    print("Scanning for sample: "+sample);
+    print("Scanning for sample: " + sample);
     char[] chunk = new char[DEFAULT_BUFFER_SIZE];
     int charsRead = 0;
     int matchedCharsCount = 0;
@@ -77,7 +77,7 @@ class StreamScanner {
       return this;
     }
 
-    public StreamScanner build(){
+    public StreamScanner build() {
       return new StreamScanner(stream, sample, onSuccess, onFail);
     }
   }

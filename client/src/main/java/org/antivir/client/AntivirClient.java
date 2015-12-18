@@ -12,8 +12,6 @@ public class AntivirClient {
   public static final int DEFAULT_SERVER_PORT = 8181;
   public static final String DEFAULT_SERVER_HOST = "localhost";
   public static final int BUFFER_SIZE = 3;
-  public static final String INFECTION_POSITIVE_RESPONSE = "infected";
-  public static final String INFECTION_NEGATIVE_RESPONSE = "safe";
 
   private final int serverPort;
   private final String serverHost;
@@ -88,6 +86,7 @@ public class AntivirClient {
   private static void print(String string) {
     System.out.println(string);
   }
+
   private static void print(String string, byte[] buf, int length) {
     System.out.println(string + new String(copyOf(buf, length)));
   }
