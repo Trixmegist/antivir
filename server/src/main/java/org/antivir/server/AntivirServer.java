@@ -1,7 +1,5 @@
 package org.antivir.server;
 
-import org.antivir.common.LoggingUtils;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -11,7 +9,7 @@ import java.util.concurrent.Executors;
 import static java.lang.Integer.parseInt;
 import static org.antivir.common.LoggingUtils.print;
 import static org.antivir.common.ServerDefaults.*;
-import static org.antivir.server.StreamScanner.StreamScannerBuilder.streamScaner;
+import static org.antivir.server.StreamScanner.StreamScannerBuilder.streamScanner;
 
 public class AntivirServer {
 
@@ -50,7 +48,7 @@ public class AntivirServer {
     try (Reader clientIn = new InputStreamReader(client.getInputStream());
          PrintWriter clientOut = new PrintWriter(new OutputStreamWriter(client.getOutputStream()))) {
 
-      streamScaner()
+      streamScanner()
           .scan(clientIn)
           .forString(INFECTION_MARKER)
           .onSuccess(() -> clientOut.println(INFECTION_POSITIVE_RESPONSE))

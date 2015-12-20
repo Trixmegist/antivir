@@ -13,17 +13,27 @@ class StreamScanner {
   private final String sample;
   private final Runnable onSuccess;
   private final Runnable onFail;
+  private final int bufferSize;
 
   public StreamScanner(Reader stream, String sample, Runnable onSuccess, Runnable onFail) {
     this.stream = requireNonNull(stream);
     this.sample = requireNonNull(sample);
     this.onSuccess = requireNonNull(onSuccess);
     this.onFail = requireNonNull(onFail);
+    this.bufferSize = DEFAULT_BUFFER_SIZE;
+  }
+
+  public StreamScanner(Reader stream, String sample, Runnable onSuccess, Runnable onFail, int bufferSize) {
+    this.stream = requireNonNull(stream);
+    this.sample = requireNonNull(sample);
+    this.onSuccess = requireNonNull(onSuccess);
+    this.onFail = requireNonNull(onFail);
+    this.bufferSize = bufferSize;
   }
 
   public void start() throws IOException {
     print("Scanning for sample: " + sample);
-    char[] chunk = new char[DEFAULT_BUFFER_SIZE];
+    char[] chunk = new char[bufferSize];
     int charsRead = 0;
     int matchedCharsCount = 0;
 
@@ -36,9 +46,12 @@ class StreamScanner {
           if (matchedCharsCount == sample.length()) {
             print("sample found");
             onSuccess.run();
+            return;
           }
         } else {
-          i -= matchedCharsCount;
+          i = i >= matchedCharsCount
+              ? i - matchedCharsCount
+              : 0;
           matchedCharsCount = 0;
         }
       }
@@ -52,9 +65,15 @@ class StreamScanner {
     private String sample;
     private Runnable onSuccess;
     private Runnable onFail;
+    private int bufferSize;
 
-    public static StreamScannerBuilder streamScaner() {
+    public static StreamScannerBuilder streamScanner() {
       return new StreamScannerBuilder();
+    }
+
+    public StreamScannerBuilder withBufferSize(int chars) {
+      this.bufferSize = chars;
+      return this;
     }
 
     public StreamScannerBuilder scan(Reader stream) {
@@ -78,7 +97,9 @@ class StreamScanner {
     }
 
     public StreamScanner build() {
-      return new StreamScanner(stream, sample, onSuccess, onFail);
+      return bufferSize > 0
+          ? new StreamScanner(stream, sample, onSuccess, onFail, bufferSize)
+          : new StreamScanner(stream, sample, onSuccess, onFail);
     }
   }
 }

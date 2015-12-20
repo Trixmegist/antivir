@@ -10,6 +10,7 @@ configure(subprojects.findAll { it.name != 'common' }) {
   dependencies {
     compile project(':common')
     testCompile 'junit:junit:4.11'
+    testCompile 'org.mockito:mockito-all:1.9.5'
   }
 }
 
