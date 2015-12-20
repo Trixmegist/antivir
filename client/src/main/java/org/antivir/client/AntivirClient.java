@@ -5,7 +5,7 @@ import java.net.Socket;
 
 import static java.lang.Integer.parseInt;
 import static java.util.Objects.requireNonNull;
-import static org.antivir.common.LoggingUtils.print;
+import static org.antivir.common.ConsoleUtils.print;
 import static org.antivir.common.ServerDefaults.DEFAULT_SERVER_HOST;
 import static org.antivir.common.ServerDefaults.DEFAULT_SERVER_PORT;
 

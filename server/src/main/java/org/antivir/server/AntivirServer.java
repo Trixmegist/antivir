@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static java.lang.Integer.parseInt;
-import static org.antivir.common.LoggingUtils.print;
+import static org.antivir.common.ConsoleUtils.print;
 import static org.antivir.common.ServerDefaults.*;
 import static org.antivir.server.StreamScanner.StreamScannerBuilder.streamScanner;
 

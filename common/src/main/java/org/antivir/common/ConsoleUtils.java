@@ -2,7 +2,7 @@ package org.antivir.common;
 
 import static java.util.Arrays.copyOf;
 
-public class LoggingUtils {
+public class ConsoleUtils {
   public static void print(String string) {
     System.out.println(string);
   }

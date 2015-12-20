@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 
 import static java.util.Objects.requireNonNull;
-import static org.antivir.common.LoggingUtils.print;
+import static org.antivir.common.ConsoleUtils.print;
 
 class StreamScanner {
   public static final int DEFAULT_BUFFER_SIZE = 3;
