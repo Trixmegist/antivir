@@ -30,7 +30,7 @@ public class AntivirServer {
     new AntivirServer(port).start();
   }
 
-  private void start() throws IOException {
+  public void start() throws IOException {
     ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_COUNT);
 
     try (ServerSocket serverSocket = new ServerSocket(port)) {

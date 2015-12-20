@@ -3,3 +3,7 @@ jar {
     attributes 'Main-Class': 'org.antivir.server.AntivirServer'
   }
 }
+
+dependencies {
+  testCompile project(':client')
+}
